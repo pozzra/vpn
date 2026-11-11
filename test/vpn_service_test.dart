@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:vpn_one/data/country_dataset.dart';
 import 'package:vpn_one/models/vpn_server.dart';
 import 'package:vpn_one/models/vpn_session.dart';
 import 'package:vpn_one/services/storage_service.dart';

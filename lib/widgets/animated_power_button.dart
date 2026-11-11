@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../models/vpn_session.dart';
 import '../theme/app_theme.dart';
+import 'radar_ripple_animation.dart';
 
 class AnimatedPowerButton extends StatefulWidget {
   final VpnStatus status;
@@ -93,91 +94,102 @@ class _AnimatedPowerButtonState extends State<AnimatedPowerButton>
       children: [
         GestureDetector(
           onTap: widget.onTap,
-          child: AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) {
-              final scale = isConnected || isConnecting ? _pulseAnimation.value : 1.0;
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Radar ripple waves
+              RadarRippleAnimation(
+                isPulsing: isConnected || isConnecting,
+                color: glowColor,
+              ),
 
-              return Transform.scale(
-                scale: scale,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Outer ambient pulsing glow
-                    Container(
-                      width: 190,
-                      height: 190,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: (isConnected || isConnecting)
-                                ? glowColor.withValues(alpha: 0.35)
-                                : glowColor.withValues(alpha: 0.12),
-                            blurRadius: isConnected ? 45 : 25,
-                            spreadRadius: isConnected ? 8 : 2,
-                          ),
-                        ],
-                      ),
-                    ),
+              AnimatedBuilder(
+                animation: _controller,
+                builder: (context, child) {
+                  final scale = isConnected || isConnecting ? _pulseAnimation.value : 1.0;
 
-                    // Rotating dashed tech ring
-                    Transform.rotate(
-                      angle: isConnecting ? _rotationAnimation.value : 0,
-                      child: Container(
-                        width: 175,
-                        height: 175,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: glowColor.withValues(alpha: isConnected ? 0.6 : 0.25),
-                            width: 2,
-                            strokeAlign: BorderSide.strokeAlignOutside,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // Inner main button circle
-                    Container(
-                      width: 145,
-                      height: 145,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [buttonGradientStart, buttonGradientEnd],
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.4),
-                            blurRadius: 16,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: isConnecting
-                            ? const SizedBox(
-                                width: 52,
-                                height: 52,
-                                child: CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                  strokeWidth: 4,
-                                ),
-                              )
-                            : Icon(
-                                icon,
-                                size: 56,
-                                color: isConnected ? Colors.black87 : Colors.white,
+                  return Transform.scale(
+                    scale: scale,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Outer ambient pulsing glow
+                        Container(
+                          width: 190,
+                          height: 190,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: (isConnected || isConnecting)
+                                    ? glowColor.withValues(alpha: 0.35)
+                                    : glowColor.withValues(alpha: 0.12),
+                                blurRadius: isConnected ? 45 : 25,
+                                spreadRadius: isConnected ? 8 : 2,
                               ),
-                      ),
+                            ],
+                          ),
+                        ),
+
+                        // Rotating dashed tech ring
+                        Transform.rotate(
+                          angle: isConnecting ? _rotationAnimation.value : 0,
+                          child: Container(
+                            width: 175,
+                            height: 175,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: glowColor.withValues(alpha: isConnected ? 0.6 : 0.25),
+                                width: 2,
+                                strokeAlign: BorderSide.strokeAlignOutside,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // Inner main button circle
+                        Container(
+                          width: 145,
+                          height: 145,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [buttonGradientStart, buttonGradientEnd],
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.4),
+                                blurRadius: 16,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: isConnecting
+                                ? const SizedBox(
+                                    width: 52,
+                                    height: 52,
+                                    child: CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      strokeWidth: 4,
+                                    ),
+                                  )
+                                : Icon(
+                                    icon,
+                                    size: 56,
+                                    color: isConnected ? Colors.black87 : Colors.white,
+                                  ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              );
-            },
+                  );
+                },
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 20),
@@ -230,4 +242,3 @@ class _AnimatedPowerButtonState extends State<AnimatedPowerButton>
     );
   }
 }
-

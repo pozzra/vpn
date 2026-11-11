@@ -15,10 +15,21 @@ class _IpDetailsScreenState extends State<IpDetailsScreen> {
   IpInfo? _ipInfo;
   bool _isLoading = true;
 
+  String? _lastServerId;
+  bool? _lastConnectionState;
+
   @override
-  void initState() {
-    super.initState();
-    _fetchInfo();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final vpn = context.watch<VpnService>();
+    final serverId = vpn.session.currentServer?.id ?? vpn.selectedServer?.id;
+    final isConnected = vpn.session.isConnected;
+
+    if (_lastServerId != serverId || _lastConnectionState != isConnected) {
+      _lastServerId = serverId;
+      _lastConnectionState = isConnected;
+      _fetchInfo();
+    }
   }
 
   Future<void> _fetchInfo() async {

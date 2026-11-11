@@ -33,17 +33,48 @@ class IpService {
 
   static Future<IpInfo> fetchPublicIp({VpnServer? connectedServer}) async {
     if (connectedServer != null) {
-      // Return VPN protected IP state
+      // Dynamic City Geolocation Mapping
+      double lat = 34.0522;
+      double lon = -118.2437;
+      String timezone = 'America/Los_Angeles';
+
+      if (connectedServer.city.contains('Los Angeles')) {
+        lat = 34.0522;
+        lon = -118.2437;
+        timezone = 'America/Los_Angeles';
+      } else if (connectedServer.city.contains('New York')) {
+        lat = 40.7128;
+        lon = -74.0060;
+        timezone = 'America/New_York';
+      } else if (connectedServer.city.contains('Tokyo')) {
+        lat = 35.6762;
+        lon = 139.6503;
+        timezone = 'Asia/Tokyo';
+      } else if (connectedServer.city.contains('Frankfurt')) {
+        lat = 50.1109;
+        lon = 8.6821;
+        timezone = 'Europe/Berlin';
+      } else if (connectedServer.city.contains('Singapore')) {
+        lat = 1.3521;
+        lon = 103.8198;
+        timezone = 'Asia/Singapore';
+      } else if (connectedServer.city.contains('London')) {
+        lat = 51.5074;
+        lon = -0.1278;
+        timezone = 'Europe/London';
+      }
+
+      // Return VPN protected IP state matching the selected server
       return IpInfo(
         ip: connectedServer.ipAddress,
         country: connectedServer.countryName,
         countryCode: connectedServer.countryCode,
         city: connectedServer.city,
-        isp: 'VPN One Secure Tunnel (${connectedServer.countryName} Dedicated Node)',
-        org: 'AS13335 VPN One Network Corp',
-        timezone: 'UTC',
-        lat: 37.7749,
-        lon: -122.4194,
+        isp: 'VPN BY RXAA Secure Gateway (${connectedServer.city} Core Node)',
+        org: 'AS13335 RXAA Global Network LLC',
+        timezone: timezone,
+        lat: lat,
+        lon: lon,
         isProtected: true,
       );
     }
@@ -72,7 +103,6 @@ class IpService {
         }
       }
     } catch (_) {
-      // Fallback to ipify if ip-api is blocked or timed out
       try {
         final fallback = await http
             .get(Uri.parse('https://api.ipify.org?format=json'))

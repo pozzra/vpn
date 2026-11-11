@@ -65,7 +65,7 @@ class HomeScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: const [
                           Text(
-                            'VPN ONE',
+                            'VPN BY RXAA',
                             style: TextStyle(
                               color: AppTheme.textPrimary,
                               fontSize: 18,

@@ -102,7 +102,7 @@ class SettingsScreen extends StatelessWidget {
                     Icon(Icons.lock_rounded, size: 16, color: AppTheme.primaryCyan),
                     SizedBox(width: 6),
                     Text(
-                      'VPN ONE',
+                      'VPN BY RXAA',
                       style: TextStyle(
                         color: AppTheme.textPrimary,
                         fontSize: 14,

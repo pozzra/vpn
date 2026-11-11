@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../models/vpn_server.dart';
+import '../services/config_service.dart';
 import '../theme/app_theme.dart';
 
 class ServerTile extends StatelessWidget {
@@ -15,6 +17,115 @@ class ServerTile extends StatelessWidget {
     required this.onTap,
     required this.onToggleFavorite,
   });
+
+  void _showConfigSheet(BuildContext context) {
+    final wgConfig = ConfigService.generateWireGuardConfig(server: server);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Text(server.flagEmoji, style: const TextStyle(fontSize: 24)),
+                      const SizedBox(width: 10),
+                      Text(
+                        '${server.countryName} - ${server.city}',
+                        style: const TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: AppTheme.textSecondary),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Server IP: ${server.ipAddress}:${server.port} • ${server.pingMs}ms',
+                style: const TextStyle(
+                  color: AppTheme.primaryCyan,
+                  fontSize: 12,
+                  fontFamily: 'monospace',
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'WIREGUARD CLIENT CONFIG (.conf)',
+                style: TextStyle(
+                  color: AppTheme.textSecondary,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.8,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceElevated,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF2B3A55)),
+                ),
+                child: Text(
+                  wgConfig,
+                  style: const TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 11,
+                    fontFamily: 'monospace',
+                    height: 1.3,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 46,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.copy_rounded, size: 18),
+                  label: const Text('COPY WIREGUARD CONFIG', style: TextStyle(fontWeight: FontWeight.w800)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryCyan,
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: wgConfig));
+                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('WireGuard config for ${server.city} copied to clipboard'),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +151,7 @@ class ServerTile extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: onTap,
+          onLongPress: () => _showConfigSheet(context),
           child: Padding(
             padding: const EdgeInsets.all(14),
             child: Row(
@@ -145,7 +257,7 @@ class ServerTile extends StatelessWidget {
                   ),
                 ),
 
-                // Ping & Favorite
+                // Ping & Favorite & Config
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -164,6 +276,20 @@ class ServerTile extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
+                    ),
+                    const SizedBox(width: 6),
+
+                    // Config info button
+                    IconButton(
+                      icon: const Icon(
+                        Icons.more_vert_rounded,
+                        color: AppTheme.textSecondary,
+                        size: 20,
+                      ),
+                      tooltip: 'WireGuard Config',
+                      onPressed: () => _showConfigSheet(context),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
                     ),
                     const SizedBox(width: 6),
 
@@ -188,4 +314,3 @@ class ServerTile extends StatelessWidget {
     );
   }
 }
-

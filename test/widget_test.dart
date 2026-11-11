@@ -22,7 +22,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.text('VPN ONE'), findsWidgets);
+    expect(find.text('VPN BY RXAA'), findsWidgets);
     expect(find.text('TAP TO CONNECT'), findsOneWidget);
     expect(find.text('Tunnel'), findsOneWidget);
     expect(find.text('Servers & IPs'), findsOneWidget);

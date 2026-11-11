@@ -23,3 +23,4 @@ if %ERRORLEVEL% EQU 0 (
     echo [FAILED] Build exited with code %ERRORLEVEL%.
 )
 pause
+

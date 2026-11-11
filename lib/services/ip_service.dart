@@ -29,7 +29,7 @@ class IpInfo {
 }
 
 class IpService {
-  static const String _defaultOriginalIp = '104.28.19.124';
+  static const String _defaultOriginalIp = '45.119.135.94';
 
   static Future<IpInfo> fetchPublicIp({VpnServer? connectedServer}) async {
     if (connectedServer != null) {
@@ -39,7 +39,7 @@ class IpService {
         country: connectedServer.countryName,
         countryCode: connectedServer.countryCode,
         city: connectedServer.city,
-        isp: 'VPN One Secure Tunnel (Mullvad / Cloudflare Backbone)',
+        isp: 'VPN One Secure Tunnel (${connectedServer.countryName} Dedicated Node)',
         org: 'AS13335 VPN One Network Corp',
         timezone: 'UTC',
         lat: 37.7749,
@@ -48,35 +48,57 @@ class IpService {
       );
     }
 
+    // When disconnected, fetch real physical IP & network details
     try {
       final response = await http
-          .get(Uri.parse('https://api.ipify.org?format=json'))
-          .timeout(const Duration(seconds: 3));
+          .get(Uri.parse('http://ip-api.com/json'))
+          .timeout(const Duration(seconds: 4));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final ip = data['ip'] as String? ?? _defaultOriginalIp;
-        return IpInfo(
-          ip: ip,
-          country: 'Local Network',
-          countryCode: 'LOC',
-          city: 'Your City',
-          isp: 'Local ISP Telecom',
-          org: 'Residential Gateway',
-          timezone: 'Local Time',
-          lat: 0.0,
-          lon: 0.0,
-          isProtected: false,
-        );
+        if (data['status'] == 'success') {
+          return IpInfo(
+            ip: data['query'] ?? _defaultOriginalIp,
+            country: data['country'] ?? 'Local Network',
+            countryCode: data['countryCode'] ?? 'LOC',
+            city: data['city'] ?? 'Local Area',
+            isp: data['isp'] ?? 'Local Broadband Provider',
+            org: data['org'] ?? 'Local ISP',
+            timezone: data['timezone'] ?? 'Local Time',
+            lat: (data['lat'] as num?)?.toDouble() ?? 0.0,
+            lon: (data['lon'] as num?)?.toDouble() ?? 0.0,
+            isProtected: false,
+          );
+        }
       }
     } catch (_) {
-      // Fallback
+      // Fallback to ipify if ip-api is blocked or timed out
+      try {
+        final fallback = await http
+            .get(Uri.parse('https://api.ipify.org?format=json'))
+            .timeout(const Duration(seconds: 3));
+        if (fallback.statusCode == 200) {
+          final data = jsonDecode(fallback.body);
+          return IpInfo(
+            ip: data['ip'] ?? _defaultOriginalIp,
+            country: 'Local Network',
+            countryCode: 'LOC',
+            city: 'Local Area',
+            isp: 'Local Broadband Provider',
+            org: 'Residential ISP',
+            timezone: 'Local Time',
+            lat: 0.0,
+            lon: 0.0,
+            isProtected: false,
+          );
+        }
+      } catch (_) {}
     }
 
     return IpInfo(
       ip: _defaultOriginalIp,
-      country: 'Unprotected Gateway',
-      countryCode: 'UNP',
+      country: 'Exposed ISP Gateway',
+      countryCode: 'LOC',
       city: 'Local Area',
       isp: 'Broadband Provider (Exposed)',
       org: 'Unencrypted Transit',
@@ -87,4 +109,3 @@ class IpService {
     );
   }
 }
-
